@@ -1,0 +1,248 @@
+---
+title: "Deliverable"
+author: "SS Ximba"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+<br>
+
+## Introduction
+
+Human activities on beaches can disturb birds that rely on coastal habitats for feeding and resting. Vehicles driving along shorelines may cause birds to flee, increasing energy expenditure and reducing foraging time. Flush distance, defined as the distance between an observer (or threat) and an animal at the moment the animal moves away (flushes) to escape, is commonly used to measure responses to disturbance and acts as a proxy for a species' tolerance to predators or human disturbance. The land distance measures the distance birds travel before landing again, which also reflects the intensity of disturbance.
+
+This study aimed to examine variation in flush distance and landing distance of beach birds in response to an approaching vehicle, and to determine whether responses differed among species, sexes, and sites.
+
+<br>
+
+#### Load libraries
+
+```{r}
+library(tidyverse)
+```
+
+<br> 
+
+#### Read data
+
+```{r}
+birds <- read.csv("data/BeachBirds.csv")
+```
+
+<br>
+
+#### Inspect
+
+```{r}
+head(birds)
+str(birds)
+```
+
+WHY: Checking the structure ensures variables are read correctly and helps identify issues early.
+
+<br>
+
+#### Convert categorical variables into factors
+
+```{r}
+birds$Site <- as.factor(birds$Site)
+birds$Species <- as.factor(birds$Species)
+birds$Sex <- as.factor(birds$Sex)
+```
+
+WHY: Factors tell R these are categorical variables, which improves summaries and plotting.
+
+<br>
+
+#### Check for missing values
+
+```{r}
+sum(is.na(birds))
+```
+
+WHY: Missing data can affect calculations like means and plots, so we check if any values are missing.
+
+<br>
+
+#### Calculate summary statistics for flush distance by species
+
+```{r}
+summary_data <- birds %>%
+  group_by(Species) %>%
+  summarise(
+    mean_flush = mean(flush.dist, na.rm = TRUE),
+    sd_flush = sd(flush.dist, na.rm = TRUE),
+    sample_size = n()
+  )
+```
+
+<br>
+
+#### View the summary table
+
+```{r}
+print(summary_data)
+```
+
+WHY: Provides a numerical comparison among species for flush distance.
+
+<br>
+
+#### Save the summary table to a CSV file
+
+```{r}
+write.csv(summary_data, "summary_flush_distance.csv", row.names = FALSE)
+```
+
+WHY: Saving the table ensures reproducibility and allows others to use the processed data without rerunning the code.
+
+<br>
+
+## Methods
+
+Observations were conducted on beaches in Australia where a vehicle was driven along the shoreline while observers recorded bird behaviour. Flush distance (distance between the vehicle and birds when they flushed) and landing distance (distance travelled before landing again) were measured in meters. Species, sex, and site were also recorded.
+
+<br>
+
+#### Create a boxplot of flush distance by species
+
+```{r}
+plot1 <- ggplot(birds, aes(x = Species, y = flush.dist, fill = Species)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(
+    x = "Species",
+    y = "Flush Distance (m)",
+    fill = "Species"
+  )
+plot1
+```
+
+<br>
+
+**Figure 1**: Flush Distance by Bird Species
+
+<br>
+
+WHY: Compares variability and differences in escape behaviour between species.
+
+<br>
+
+#### Save the plot
+
+```{r}
+ggsave("flush_distance_plot.png", plot = plot1, width = 6, height = 4)
+```
+
+WHY: Saving the figure ensures reproducibility and inclusion in reports.
+
+<br>
+
+#### Compare flush distance between males and females
+
+```{r}
+sex_summary <- birds %>%
+  group_by(Sex) %>%
+  summarise(
+    mean_flush = mean(flush.dist, na.rm = TRUE),
+    sd_flush = sd(flush.dist, na.rm = TRUE),
+    n = n()
+  )
+
+print(sex_summary)
+```
+
+WHY: This explores whether flush distance differs between males and females.
+
+<br>
+
+#### Create a boxplot of flush distance by sex
+
+```{r}
+plot2 <- ggplot(birds, aes(x = Sex, y = flush.dist, fill = Sex)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(
+    x = "Sex",
+    y = "Flush Distance (m)"
+  )
+plot2
+```
+
+<br>
+
+**Figure 2**: Flush Distance by Sex
+
+<br>
+
+WHY: Compares variability and differences in escape behaviour between sexes.
+
+<br>
+
+#### Save the plot
+
+```{r}
+ggsave("flush_distance_by_sex.png", plot = plot2, width = 6, height = 4)
+```
+
+<br>
+
+#### Create a boxplot of flush distance by site
+
+```{r}
+plot3 <- ggplot(birds, aes(x = Site, y = flush.dist, fill = Site)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(
+    x = "Site",
+    y = "Flush Distance (m)",
+    fill = "Site"
+  )
+plot3
+```
+
+<br>
+
+**Figure 3**: Flush Distance Across Sites
+
+<br>
+
+WHY: Compares escape behaviour across sampling locations to see whether disturbance varies among sites.
+
+<br>
+
+#### Save the figure
+
+```{r}
+ggsave("flush_distance_by_site.png", plot = plot3, width = 6, height = 4)
+```
+
+<br>
+
+## Results
+
+Flush distance differed among species (Figure 1). Oystercatchers exhibited the highest median flush distances and the greatest variability, indicating that they responded at larger distances from the approaching vehicle. In contrast, plovers showed lower median flush distances, suggesting greater tolerance to disturbance. The remaining species displayed intermediate values with overlapping ranges.
+
+Males and females showed similar flush distances, with overlapping distributions and comparable variability between sexes (Figure 2), indicating no clear sex-based differences in response behaviour.
+
+Flush distance was relatively consistent across the five study sites (Figure 3), with median values ranging between approximately 7 and 9 m. Although variability occurred within sites, only Site 2 showed a notable outlier of approximately 20 m. Overall, there were no clear differences in central tendency among locations.
+
+<br>
+
+## Discussion
+
+The differences in flush distance among species suggest that behavioural responses to disturbance vary between taxa. Oystercatchers, which flushed at greater distances, may be more sensitive to approaching threats, possibly due to their larger body size and higher visibility on open beaches (Figure 1). In contrast, Plovers flushed at shorter distances, which may reflect greater reliance on camouflage or higher tolerance to disturbance. Species-specific escape behaviour is often linked to body size, perceived predation risk, and previous exposure to disturbance (Blumstein, 2003).
+
+The absence of differences between sexes indicates that males and females responded similarly to perceived threats, suggesting sex was not a strong determinant of escape behaviour in this dataset. Similar patterns have been reported in shorebirds, where sex differences in flight initiation distance are often weak or inconsistent (Weston et al., 2012).
+
+Flush distance also appeared consistent across sites, with similar medians despite substantial within-site variability. This suggests that site location had limited influence on behavioural responses, and that individual variation or contextual factors may be more important drivers. Previous studies have shown that escape responses are frequently determined more by species traits and risk perception than by spatial location alone (Blumstein, 2003).
+
+<br>
+
+## References
+
+Blumstein, D.T. 2003. Flight-initiation distance in birds is dependent on intruder starting distance. *Journal of Wildlife Management*. 67:852-857. DOI: 10.2307/3802692. 
+
+Weston, M.A., McLeod, E.M., Blumstein, D.T. & Guay, P.J. 2012. A review of flight-initiation distances and their application to managing disturbance to Australian birds. *Emu*. 112:269-286. DOI: 10.1071/MU12026.
+
+<br>
